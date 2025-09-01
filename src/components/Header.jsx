@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const AnimatedLogo = () => (
+export const AnimatedLogo = () => (
   <span className="text-xl font-semibold text-purple-500">
     Student Life Toolkit
   </span>
