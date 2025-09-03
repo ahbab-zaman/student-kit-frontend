@@ -83,119 +83,81 @@ const Focus = () => {
     motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Focus Mode</h1>
-        <p className="text-muted-foreground">
+    <div className="py-6 space-y-8 animate-in slide-in-from-top duration-300">
+      <div className="lg:text-left text-center">
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          Focus Mode
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
           Boost productivity with the Pomodoro Technique
         </p>
       </div>
 
-      <div className="flex justify-center">
-        <Card className="floating-card w-full max-w-md">
-          <CardContent className="p-8 text-center">
-            <div
-              className={`w-64 h-64 mx-auto rounded-full border-8 flex items-center justify-center relative ${
-                isBreak
-                  ? "border-[hsl(var(--color-science))]/20"
-                  : "border-primary/20"
-              }`}
-              style={{
-                background: `conic-gradient(${
-                  isBreak ? "hsl(var(--color-science))" : "hsl(var(--primary))"
-                } ${progress}%, transparent ${progress}%)`,
-              }}
-            >
-              <div className="absolute inset-2 bg-card rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-4xl font-bold mb-2">
-                    {formatTime(timeLeft)}
-                  </div>
-                  <div
-                    className={`text-sm font-medium ${
-                      isBreak
-                        ? "text-[hsl(var(--color-science))]"
-                        : "text-primary"
-                    }`}
-                  >
-                    {isBreak ? "Break Time" : "Focus Time"}
-                  </div>
-                </div>
+      <Card>
+        <div
+          className={`w-full max-w-[16rem] aspect-square mx-auto rounded-full border-8 flex items-center justify-center relative ${
+            isBreak ? "border-green-500/20" : "border-blue-500/20"
+          }`}
+          style={{
+            background: `conic-gradient(${
+              isBreak ? "#10b981" : "#3b82f6"
+            } ${progress}%, transparent ${progress}%)`,
+          }}
+        >
+          <div className="absolute inset-2 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2">
+                {formatTime(timeLeft)}
+              </div>
+              <div
+                className={`text-sm font-medium ${
+                  isBreak ? "text-green-500" : "text-blue-500"
+                }`}
+              >
+                {isBreak ? "Break Time" : "Focus Time"}
               </div>
             </div>
-
-            <div className="mt-8 space-y-4">
-              <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={toggleTimer}
-                  className={`btn-gradient w-20 h-20 rounded-full ${
-                    isActive ? "animate-pulse-glow" : ""
-                  }`}
-                >
-                  {isActive ? (
-                    <Pause className="h-8 w-8" />
-                  ) : (
-                    <Play className="h-8 w-8" />
-                  )}
-                </Button>
-                <Button
-                  onClick={resetTimer}
-                  variant="outline"
-                  className="w-20 h-20 rounded-full border-border/40"
-                >
-                  <RotateCcw className="h-6 w-6" />
-                </Button>
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Sessions completed today
-                </p>
-                <p className="text-2xl font-bold text-primary">{sessions}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+          </div>
+        </div>
+      </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 gradient-text">
-              <Brain className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center space-x-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              <Brain className="h-5 w-5 text-blue-500" />
               <span>How Pomodoro Works</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+              <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center text-xs font-medium text-blue-500">
                 1
               </div>
               <div>
                 <p className="font-medium">Focus for 25 minutes</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Work on a single task without distractions
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 rounded-full bg-[hsl(var(--color-science))]/10 flex items-center justify-center text-xs font-medium text-[hsl(var(--color-science))]">
+              <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center text-xs font-medium text-green-500">
                 2
               </div>
               <div>
                 <p className="font-medium">Take a 5-minute break</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Relax, stretch, or grab a drink
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 rounded-full bg-[hsl(var(--color-english))]/10 flex items-center justify-center text-xs font-medium text-[hsl(var(--color-english))]">
+              <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center text-xs font-medium text-blue-500">
                 3
               </div>
               <div>
                 <p className="font-medium">Repeat the cycle</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   After 4 sessions, take a longer break
                 </p>
               </div>
@@ -203,10 +165,10 @@ const Focus = () => {
           </CardContent>
         </Card>
 
-        <Card className="floating-card border-primary/20">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border-blue-500/20">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 gradient-text">
-              <Coffee className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center space-x-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              <Coffee className="h-5 w-5 text-blue-500" />
               <span>{isBreak ? "Break Time Tips" : "Daily Motivation"}</span>
             </CardTitle>
           </CardHeader>
@@ -214,7 +176,7 @@ const Focus = () => {
             {isBreak ? (
               <div className="space-y-3">
                 <p className="text-sm">Make the most of your break:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">
+                <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
                   <li>• Stand up and stretch</li>
                   <li>• Hydrate with water</li>
                   <li>• Look away from your screen</li>
@@ -227,7 +189,7 @@ const Focus = () => {
                 <blockquote className="text-lg font-medium italic">
                   "{randomQuote}"
                 </blockquote>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Keep pushing forward! You've got this! 🚀
                 </p>
               </div>

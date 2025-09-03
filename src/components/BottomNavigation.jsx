@@ -36,7 +36,7 @@ export const BottomNavigation = () => {
             }
           >
             <item.icon className="h-5 w-5 mb-1" />
-            <span className="truncate max-w-[50px]">{item.title}</span>
+            
           </NavLink>
         ))}
       </div>

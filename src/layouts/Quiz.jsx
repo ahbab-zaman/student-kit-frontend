@@ -11,7 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Plus, Brain, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -57,7 +62,7 @@ const Quiz = () => {
     };
 
     setQuestions((prev) => [questionData, ...prev]);
-    toast({ title: "Question Added", className: "btn-gradient text-white" });
+    toast({ title: "Question Added", className: "bg-blue-500 text-white" });
     setIsDialogOpen(false);
   };
 
@@ -66,7 +71,7 @@ const Quiz = () => {
       toast({
         title: "No Questions",
         description: "Add questions to start",
-        className: "btn-gradient text-white",
+        className: "bg-blue-500 text-white",
       });
       return;
     }
@@ -127,37 +132,41 @@ const Quiz = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+    <div className="py-6 space-y-6 animate-in slide-in-from-top duration-300">
+      <div className="flex justify-between items-center lg:flex-row flex-col lg:text-left text-center gap-2">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Quiz</h1>
-          <p className="text-muted-foreground">Test your knowledge</p>
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            Quiz
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            Test your knowledge
+          </p>
         </div>
         <div className="flex space-x-3">
           <Button
             onClick={generateRandomQuestion}
             variant="outline"
-            className="border-border/40"
+            className="border-gray-200 dark:border-gray-700"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Random
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="btn-gradient">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Question
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md glass-card">
+            <DialogContent className="sm:max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
               <DialogHeader>
-                <DialogTitle className="gradient-text">
+                <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
                   New Question
                 </DialogTitle>
               </DialogHeader>
@@ -216,7 +225,10 @@ const Quiz = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full btn-gradient">
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                >
                   Add
                 </Button>
               </form>
@@ -226,10 +238,10 @@ const Quiz = () => {
       </div>
 
       {score.total > 0 && (
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">Score</p>
-            <p className="text-2xl font-bold text-primary">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Score</p>
+            <p className="text-2xl font-bold text-blue-500">
               {score.correct}/{score.total}
             </p>
           </CardContent>
@@ -237,9 +249,9 @@ const Quiz = () => {
       )}
 
       {currentQuestion ? (
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="gradient-text">
+            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
               {currentQuestion.subject}
             </CardTitle>
           </CardHeader>
@@ -251,8 +263,8 @@ const Quiz = () => {
                   variant="outline"
                   className={`p-4 ${
                     userAnswer === "True"
-                      ? "border-primary bg-primary/10"
-                      : "border-border/40"
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-gray-200 dark:border-gray-700"
                   }`}
                   onClick={() => setUserAnswer("True")}
                 >
@@ -262,8 +274,8 @@ const Quiz = () => {
                   variant="outline"
                   className={`p-4 ${
                     userAnswer === "False"
-                      ? "border-primary bg-primary/10"
-                      : "border-border/40"
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-gray-200 dark:border-gray-700"
                   }`}
                   onClick={() => setUserAnswer("False")}
                 >
@@ -283,25 +295,23 @@ const Quiz = () => {
             {showAnswer && (
               <div
                 className={`p-4 rounded-lg border ${
-                  isCorrect
-                    ? "border-[hsl(var(--color-science))]/20"
-                    : "border-[hsl(var(--color-math))]/20"
+                  isCorrect ? "border-green-500/20" : "border-red-500/20"
                 }`}
               >
                 <div className="flex items-center space-x-2">
                   {isCorrect ? (
-                    <CheckCircle className="h-5 w-5 text-[hsl(var(--color-science))]" />
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-[hsl(var(--color-math))]" />
+                    <XCircle className="h-5 w-5 text-red-500" />
                   )}
                   <p className="font-medium">
                     {isCorrect ? "Correct!" : "Incorrect"}
                   </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Your answer: {userAnswer}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Correct answer: {currentQuestion.answer}
                 </p>
               </div>
@@ -309,7 +319,7 @@ const Quiz = () => {
             <Button
               onClick={showAnswer ? startQuiz : checkAnswer}
               disabled={!userAnswer && !showAnswer}
-              className="w-full btn-gradient"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
             >
               {showAnswer ? (
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -321,11 +331,16 @@ const Quiz = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-5">
           <CardContent className="p-12 text-center">
-            <Brain className="h-12 w-12 text-primary mx-auto mb-4" />
-            <p className="text-lg gradient-text">Start Practicing!</p>
-            <Button onClick={startQuiz} className="mt-4 btn-gradient">
+            <Brain className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+            <p className="text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              Start Practicing!
+            </p>
+            <Button
+              onClick={startQuiz}
+              className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+            >
               Begin Quiz
             </Button>
           </CardContent>

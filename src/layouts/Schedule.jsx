@@ -43,13 +43,13 @@ const Schedule = () => {
     "Sunday",
   ];
   const colors = [
-    "hsl(var(--color-english))",
-    "hsl(var(--color-science))",
-    "hsl(var(--color-art))",
-    "hsl(var(--color-history))",
-    "hsl(var(--color-math))",
-    "hsl(var(--color-music))",
-    "hsl(var(--color-science))",
+    "blue-400",
+    "green-400",
+    "purple-400",
+    "yellow-400",
+    "red-400",
+    "pink-400",
+    "cyan-400",
   ];
 
   useEffect(() => {
@@ -112,30 +112,32 @@ const Schedule = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
+    <div className="py-6 space-y-8 animate-in slide-in-from-top duration-300">
+      <div className="flex justify-between items-center lg:flex-row flex-col gap-2 text-center">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Class Schedule</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            Class Schedule
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
             Manage your weekly class schedule
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient">
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
               <Plus className="h-4 w-4 mr-2" />
               Add Class
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] glass-card">
+          <DialogContent className="sm:max-w-[425px] bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
             <DialogHeader>
-              <DialogTitle className="gradient-text">
+              <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
                 {editingClass ? "Edit Class" : "Add New Class"}
               </DialogTitle>
               <DialogDescription>
@@ -236,7 +238,10 @@ const Schedule = () => {
                   defaultValue={editingClass?.location}
                 />
               </div>
-              <Button type="submit" className="w-full btn-gradient">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+              >
                 {editingClass ? "Update Class" : "Add Class"}
               </Button>
             </form>
@@ -244,11 +249,16 @@ const Schedule = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-4">
         {days.map((day) => (
-          <Card key={day} className="floating-card">
+          <Card
+            key={day}
+            className="shadow-lg hover:shadow-xl transition-shadow duration-300"
+          >
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg gradient-text">{day}</CardTitle>
+              <CardTitle className="text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+                {day}
+              </CardTitle>
               <CardDescription>
                 {getClassesForDay(day).length} classes
               </CardDescription>
@@ -257,7 +267,7 @@ const Schedule = () => {
               {getClassesForDay(day).map((classItem) => (
                 <div
                   key={classItem.id}
-                  className="p-3 rounded-lg border border-border/40"
+                  className="p-3 rounded-lg border border-gray-200 dark:border-gray-700"
                   style={{
                     borderLeftColor: classItem.color,
                     borderLeftWidth: "4px",
@@ -287,18 +297,18 @@ const Schedule = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                     <Clock className="h-3 w-3" />
                     <span>
                       {classItem.time_start} - {classItem.time_end}
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                     <User className="h-3 w-3" />
                     <span>{classItem.instructor}</span>
                   </div>
                   {classItem.location && (
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                       <MapPin className="h-3 w-3" />
                       <span>{classItem.location}</span>
                     </div>
@@ -306,7 +316,7 @@ const Schedule = () => {
                 </div>
               ))}
               {getClassesForDay(day).length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                   No classes scheduled
                 </p>
               )}

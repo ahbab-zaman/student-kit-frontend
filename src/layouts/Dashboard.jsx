@@ -1,6 +1,11 @@
-// Dashboard.jsx
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,28 +55,24 @@ const Dashboard = () => {
     {
       name: "Completed",
       value: stats.completedTasks,
-      color: "hsl(var(--color-science))",
+      color: "green-400",
     },
     {
       name: "Pending",
       value: stats.totalTasks - stats.completedTasks,
-      color: "hsl(var(--color-history))",
+      color: "yellow-400",
     },
   ];
 
   const budgetData = [
-    { category: "Food", amount: 400, color: "hsl(var(--color-english))" },
-    { category: "Books", amount: 200, color: "hsl(var(--color-art))" },
-    { category: "Transport", amount: 150, color: "hsl(var(--color-music))" },
-    {
-      category: "Entertainment",
-      amount: 100,
-      color: "hsl(var(--color-history))",
-    },
+    { category: "Food", amount: 400, color: "blue-400" },
+    { category: "Books", amount: 200, color: "purple-400" },
+    { category: "Transport", amount: 150, color: "pink-400" },
+    { category: "Entertainment", amount: 100, color: "yellow-400" },
   ];
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000); // Simulate loading
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
   const completionRate =
@@ -81,81 +82,89 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 space-y-6 animate-in slide-in-from-top duration-300">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
         <div className="flex items-center space-x-4">
           <AnimatedLogo size="large" />
         </div>
         <div className="text-right">
-          <p className="text-sm text-muted-foreground">Welcome back!</p>
-          <p className="text-lg font-semibold gradient-text">User</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Welcome back!
+          </p>
+          <p className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            User
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTasks}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {stats.completedTasks} completed
             </p>
           </CardContent>
         </Card>
 
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Budget Remaining
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${budgetRemaining}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               ${stats.totalExpenses} spent
             </p>
           </CardContent>
         </Card>
 
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Classes</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.upcomingClasses}</div>
-            <p className="text-xs text-muted-foreground">this semester</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              this semester
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Focus Sessions
             </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pomodoroSessions}</div>
-            <p className="text-xs text-muted-foreground">total completed</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              total completed
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 gradient-text">
+            <CardTitle className="flex items-center space-x-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
               <Target className="h-5 w-5" />
               <span>Task Completion Rate</span>
             </CardTitle>
@@ -167,8 +176,8 @@ const Dashboard = () => {
               <Badge
                 className={
                   completionRate >= 70
-                    ? "btn-gradient"
-                    : "bg-secondary text-secondary-foreground"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                    : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
                 }
               >
                 {completionRate.toFixed(1)}%
@@ -176,18 +185,18 @@ const Dashboard = () => {
             </div>
             <Progress
               value={completionRate}
-              className="w-full bg-muted"
-              indicatorClassName="bg-gradient-primary"
+              className="w-full bg-gray-200 dark:bg-gray-700"
+              indicatorClassName="bg-gradient-to-r from-blue-500 to-purple-500"
             />
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {stats.completedTasks} of {stats.totalTasks} tasks completed
             </div>
           </CardContent>
         </Card>
 
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 gradient-text">
+            <CardTitle className="flex items-center space-x-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
               <TrendingUp className="h-5 w-5" />
               <span>Weekly Activity</span>
             </CardTitle>
@@ -202,12 +211,12 @@ const Dashboard = () => {
                   <YAxis fontSize={12} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
+                      backgroundColor: "white",
+                      border: "1px solid gray",
                       borderRadius: "8px",
                     }}
                   />
-                  <Bar dataKey="tasks" fill="hsl(var(--primary))" radius={4} />
+                  <Bar dataKey="tasks" fill="#3b82f6" radius={4} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -216,9 +225,11 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="gradient-text">Task Distribution</CardTitle>
+            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              Task Distribution
+            </CardTitle>
             <CardDescription>Current task status breakdown</CardDescription>
           </CardHeader>
           <CardContent>
@@ -240,8 +251,8 @@ const Dashboard = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
+                      backgroundColor: "white",
+                      border: "1px solid gray",
                       borderRadius: "8px",
                     }}
                   />
@@ -262,9 +273,11 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="gradient-text">Budget Overview</CardTitle>
+            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              Budget Overview
+            </CardTitle>
             <CardDescription>Spending by category</CardDescription>
           </CardHeader>
           <CardContent>
@@ -283,7 +296,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
-              <div className="pt-4 border-t border-border/40">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total Expenses</span>
                   <span>

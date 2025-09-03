@@ -79,7 +79,7 @@ const Budget = () => {
         variant: "destructive",
         title: "Invalid Amount",
         description: "Please enter a positive amount",
-        className: "btn-gradient text-white",
+        className: "bg-red-500 text-white",
       });
       return;
     }
@@ -94,7 +94,7 @@ const Budget = () => {
     };
 
     setEntries((prev) => [entryData, ...prev]);
-    toast({ title: "Entry Added", className: "btn-gradient text-white" });
+    toast({ title: "Entry Added", className: "bg-blue-500 text-white" });
     setIsDialogOpen(false);
     setSelectedType("income");
     e.target.reset();
@@ -102,7 +102,7 @@ const Budget = () => {
 
   const handleDelete = (id) => {
     setEntries((prev) => prev.filter((entry) => entry.id !== id));
-    toast({ title: "Entry Deleted", className: "btn-gradient text-white" });
+    toast({ title: "Entry Deleted", className: "bg-blue-500 text-white" });
   };
 
   const totalIncome = entries
@@ -123,41 +123,45 @@ const Budget = () => {
     .filter((item) => item.value > 0);
 
   const COLORS = [
-    "hsl(var(--color-english))",
-    "hsl(var(--color-science))",
-    "hsl(var(--color-history))",
-    "hsl(var(--color-math))",
-    "hsl(var(--color-art))",
-    "hsl(var(--color-music))",
-  ];
+    "bg-blue-400",
+    "bg-green-400",
+    "bg-yellow-400",
+    "bg-red-400",
+    "bg-purple-400",
+    "bg-pink-400",
+  ].map((color) => color.replace("bg-", ""));
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+    <div className="py-6 space-y-6 animate-in slide-in-from-top duration-300">
+      <div className="flex justify-between items-center lg:flex-row flex-col lg:text-left text-center gap-2">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Budget</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            Budget
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
             Track your income and expenses
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient">
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
               <Plus className="h-4 w-4 mr-2" />
               Add Entry
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md glass-card">
+          <DialogContent className="sm:max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
             <DialogHeader>
-              <DialogTitle className="gradient-text">New Entry</DialogTitle>
+              <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+                New Entry
+              </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -223,7 +227,10 @@ const Budget = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full btn-gradient">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+              >
                 Add
               </Button>
             </form>
@@ -232,56 +239,62 @@ const Budget = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Income</p>
-                <p className="text-2xl font-bold text-[hsl(var(--color-science))]">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Income
+                </p>
+                <p className="text-2xl font-bold text-green-500">
                   ${totalIncome.toFixed(2)}
                 </p>
               </div>
-              <TrendingUp className="h-6 w-6 text-[hsl(var(--color-science))]" />
+              <TrendingUp className="h-6 w-6 text-green-500" />
             </div>
           </CardContent>
         </Card>
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Expenses</p>
-                <p className="text-2xl font-bold text-[hsl(var(--color-math))]">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Expenses
+                </p>
+                <p className="text-2xl font-bold text-red-500">
                   ${totalExpenses.toFixed(2)}
                 </p>
               </div>
-              <TrendingDown className="h-6 w-6 text-[hsl(var(--color-math))]" />
+              <TrendingDown className="h-6 w-6 text-red-500" />
             </div>
           </CardContent>
         </Card>
-        <Card className="floating-card">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Savings</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Savings
+                </p>
                 <p
                   className={`text-2xl font-bold ${
-                    savings >= 0
-                      ? "text-[hsl(var(--color-english))]"
-                      : "text-[hsl(var(--color-math))]"
+                    savings >= 0 ? "text-blue-500" : "text-red-500"
                   }`}
                 >
                   ${savings.toFixed(2)}
                 </p>
               </div>
-              <DollarSign className="h-6 w-6 text-[hsl(var(--color-english))]" />
+              <DollarSign className="h-6 w-6 text-blue-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="floating-card">
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
-          <CardTitle className="gradient-text">Expense Breakdown</CardTitle>
+          <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            Expense Breakdown
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {expensesByCategory.length > 0 ? (
@@ -304,16 +317,18 @@ const Budget = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
               No expenses to display
             </p>
           )}
         </CardContent>
       </Card>
 
-      <Card className="floating-card">
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-6">
         <CardHeader>
-          <CardTitle className="gradient-text">Recent Entries</CardTitle>
+          <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            Recent Entries
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {entries.length > 0 ? (
@@ -324,13 +339,13 @@ const Budget = () => {
               >
                 <div className="flex items-center space-x-3">
                   {entry.type === "income" ? (
-                    <TrendingUp className="h-4 w-4 text-[hsl(var(--color-science))]" />
+                    <TrendingUp className="h-4 w-4 text-green-500" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-[hsl(var(--color-math))]" />
+                    <TrendingDown className="h-4 w-4 text-red-500" />
                   )}
                   <div>
                     <p className="text-sm font-medium">{entry.description}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {entry.category} •{" "}
                       {new Date(entry.date).toLocaleDateString()}
                     </p>
@@ -340,8 +355,8 @@ const Budget = () => {
                   <p
                     className={`text-sm font-medium ${
                       entry.type === "income"
-                        ? "text-[hsl(var(--color-science))]"
-                        : "text-[hsl(var(--color-math))]"
+                        ? "text-green-500"
+                        : "text-red-500"
                     }`}
                   >
                     {entry.type === "income" ? "+" : "-"}$
@@ -358,7 +373,7 @@ const Budget = () => {
               </div>
             ))
           ) : (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
               No entries yet
             </p>
           )}

@@ -1,5 +1,4 @@
 import { NavLink } from "react-router";
-import { useState } from "react";
 import {
   Home,
   Calendar,
@@ -13,9 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
+export const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const navigationItems = [
     { title: "Dashboard", url: "/", icon: Home },
     { title: "Class Schedule", url: "/schedule", icon: Calendar },
@@ -28,10 +25,9 @@ export const Sidebar = () => {
 
   return (
     <div
-      className={`h-screen p-4 bg-gray-900 text-white transition-all duration-300 flex flex-col ${
-        isCollapsed ? "w-20" : "w-64"
-      }`}
+      className={`h-full p-4 bg-gray-900 text-white transition-all duration-300 flex flex-col`}
     >
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <GraduationCap className="h-6 w-6 text-purple-500" />
@@ -50,18 +46,22 @@ export const Sidebar = () => {
           )}
         </button>
       </div>
+
+      {/* Navigation */}
       <nav className="flex-1 space-y-2 overflow-y-auto">
         {navigationItems.map((item) => (
           <NavLink
             key={item.url}
             to={item.url}
-            className={`flex items-center py-2 px-4 rounded hover:bg-gray-800 ${(
-              isActive
-            ) => (isActive ? "bg-purple-900 text-white" : "text-gray-400")} ${
-              isCollapsed ? "justify-center" : "justify-start"
-            }`}
+            className={({ isActive }) =>
+              `flex items-center py-2 rounded transition-colors duration-200 ${
+                isActive
+                  ? "bg-purple-900 text-white"
+                  : "text-gray-400 hover:bg-gray-800"
+              } ${isCollapsed ? "justify-center px-0" : "justify-start px-4"}`
+            }
           >
-            <item.icon className={`h-5 w-5 ${isCollapsed ? "mr-0" : "mr-2"}`} />
+            <item.icon className={`h-5 w-5 ${isCollapsed ? "" : "mr-2"}`} />
             {!isCollapsed && <span className="font-medium">{item.title}</span>}
           </NavLink>
         ))}

@@ -25,14 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import {
   Plus,
   CheckCircle,
   Circle,
   Clock,
   Calendar,
-  Filter,
   Trash2,
   Edit,
 } from "lucide-react";
@@ -52,7 +50,7 @@ const Todo = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      setTasks([
+      const initial = [
         {
           id: "1",
           title: "Finish project",
@@ -61,17 +59,9 @@ const Todo = () => {
           due_date: "2025-09-05",
           status: "todo",
         },
-      ]);
-      setFilteredTasks([
-        {
-          id: "1",
-          title: "Finish project",
-          description: "Complete the final report for the science project",
-          priority: "high",
-          due_date: "2025-09-05",
-          status: "todo",
-        },
-      ]);
+      ];
+      setTasks(initial);
+      setFilteredTasks(initial);
       setLoading(false);
     }, 1000);
   }, []);
@@ -107,10 +97,10 @@ const Todo = () => {
       setTasks((prev) =>
         prev.map((task) => (task.id === editingTask.id ? taskData : task))
       );
-      toast({ title: "Task updated successfully!" });
+      toast.success("Task updated successfully!");
     } else {
       setTasks((prev) => [taskData, ...prev]);
-      toast({ title: "Task added successfully!" });
+      toast.success("Task added successfully!");
     }
 
     setIsDialogOpen(false);
@@ -119,7 +109,7 @@ const Todo = () => {
 
   const handleDelete = (id) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
-    toast({ title: "Task deleted successfully!" });
+    toast.success("Task deleted successfully!");
   };
 
   const toggleTaskStatus = (id, currentStatus) => {
@@ -134,27 +124,32 @@ const Todo = () => {
         task.id === id ? { ...task, status: nextStatus } : task
       )
     );
-    toast({ title: `Task marked as ${nextStatus}!` });
+    toast.success(`Task marked as ${nextStatus}!`);
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">To-Do List</h1>
-          <p className="text-muted-foreground">Manage your tasks efficiently</p>
+    <div className="py-6 space-y-8 animate-in slide-in-from-top duration-300 px-4 sm:px-6 lg:px-8">
+      {/* Header + Filters */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="text-center md:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+            To-Do List
+          </h1>
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+            Manage your tasks efficiently
+          </p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px] border-border/40">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -168,7 +163,7 @@ const Todo = () => {
             </SelectContent>
           </Select>
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[140px] border-border/40">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Filter by priority" />
             </SelectTrigger>
             <SelectContent>
@@ -182,14 +177,14 @@ const Todo = () => {
           </Select>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="btn-gradient">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Task
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] glass-card">
+            <DialogContent className="max-w-sm sm:max-w-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
               <DialogHeader>
-                <DialogTitle className="gradient-text">
+                <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
                   {editingTask ? "Edit Task" : "Add New Task"}
                 </DialogTitle>
                 <DialogDescription>
@@ -216,7 +211,7 @@ const Todo = () => {
                     defaultValue={editingTask?.description}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
                     <Select
@@ -248,7 +243,10 @@ const Todo = () => {
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full btn-gradient">
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                >
                   {editingTask ? "Update Task" : "Add Task"}
                 </Button>
               </form>
@@ -257,37 +255,42 @@ const Todo = () => {
         </div>
       </div>
 
-      <Card className="floating-card">
+      {/* Task List */}
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-5">
         <CardHeader>
-          <CardTitle className="gradient-text">Your Tasks</CardTitle>
-          <CardDescription>{filteredTasks.length} tasks found</CardDescription>
+          <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 text-lg sm:text-xl">
+            Your Tasks
+          </CardTitle>
+          <CardDescription className="text-sm sm:text-base">
+            {filteredTasks.length} tasks found
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="p-4 rounded-lg border border-border/40 flex items-center justify-between"
+              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-start sm:items-center gap-3 flex-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleTaskStatus(task.id, task.status)}
                 >
                   {task.status === "completed" ? (
-                    <CheckCircle className="h-5 w-5 text-[hsl(var(--color-science))]" />
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground" />
+                    <Circle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </Button>
-                <div>
-                  <p className="font-medium">{task.title}</p>
+                <div className="min-w-0">
+                  <p className="font-medium break-words">{task.title}</p>
                   {task.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                       {task.description}
                     </p>
                   )}
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <Clock className="h-3 w-3" />
                     <span>
                       {task.status.charAt(0).toUpperCase() +
@@ -300,10 +303,10 @@ const Todo = () => {
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         task.priority === "high"
-                          ? "bg-[hsl(var(--color-math))]/10 text-[hsl(var(--color-math))]"
+                          ? "bg-red-500/10 text-red-500"
                           : task.priority === "medium"
-                          ? "bg-[hsl(var(--color-history))]/10 text-[hsl(var(--color-history))]"
-                          : "bg-[hsl(var(--color-science))]/10 text-[hsl(var(--color-science))]"
+                          ? "bg-yellow-500/10 text-yellow-500"
+                          : "bg-green-500/10 text-green-500"
                       }`}
                     >
                       {task.priority}
@@ -311,7 +314,7 @@ const Todo = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2 self-end sm:self-auto">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -333,7 +336,7 @@ const Todo = () => {
             </div>
           ))}
           {filteredTasks.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
               No tasks found. Add a new task to get started!
             </div>
           )}
