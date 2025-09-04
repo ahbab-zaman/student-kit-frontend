@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { debounce } from "lodash";
+import { useScheduleStore } from "../hooks/useSchedule";
 import {
   Card,
   CardContent,
@@ -24,14 +26,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Clock, User, MapPin, Edit, Trash2 } from "lucide-react";
+import { Plus, Clock, User, MapPin, Edit, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 const Schedule = () => {
-  const [classes, setClasses] = useState([]);
+  const { classes, loading, fetchClasses, addClass, updateClass, deleteClass } =
+    useScheduleStore();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const days = [
     "Monday",
@@ -42,39 +47,39 @@ const Schedule = () => {
     "Saturday",
     "Sunday",
   ];
+
   const colors = [
-    "blue-400",
-    "green-400",
-    "purple-400",
-    "yellow-400",
-    "red-400",
-    "pink-400",
-    "cyan-400",
+    { name: "Blue", value: "#60A5FA" },
+    { name: "Green", value: "#4ADE80" },
+    { name: "Purple", value: "#A78BFA" },
+    { name: "Yellow", value: "#FACC15" },
+    { name: "Red", value: "#F87171" },
+    { name: "Pink", value: "#F472B6" },
+    { name: "Cyan", value: "#22D3EE" },
   ];
 
   useEffect(() => {
-    setTimeout(() => {
-      setClasses([
-        {
-          id: "1",
-          subject: "Mathematics",
-          day: "Monday",
-          time_start: "09:00",
-          time_end: "10:30",
-          instructor: "Dr. Smith",
-          color: colors[0],
-          location: "Room 101",
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    fetchClasses();
+  }, [fetchClasses]);
+
+  // Debounce search term
+  const debouncedHandler = useMemo(
+    () =>
+      debounce((val) => {
+        setDebouncedSearch(val.toLowerCase());
+      }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debouncedHandler(searchTerm);
+    return () => debouncedHandler.cancel();
+  }, [searchTerm, debouncedHandler]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const classData = {
-      id: editingClass ? editingClass.id : Date.now().toString(),
       subject: formData.get("subject"),
       day: formData.get("day"),
       time_start: formData.get("time_start"),
@@ -85,13 +90,9 @@ const Schedule = () => {
     };
 
     if (editingClass) {
-      setClasses((prev) =>
-        prev.map((c) => (c.id === editingClass.id ? classData : c))
-      );
-      toast({ title: "Class updated successfully!" });
+      updateClass(editingClass._id, classData);
     } else {
-      setClasses((prev) => [classData, ...prev]);
-      toast({ title: "Class added successfully!" });
+      addClass(classData);
     }
 
     setIsDialogOpen(false);
@@ -99,13 +100,24 @@ const Schedule = () => {
   };
 
   const handleDelete = (id) => {
-    setClasses((prev) => prev.filter((c) => c.id !== id));
-    toast({ title: "Class deleted successfully!" });
+    if (window.confirm("Are you sure you want to delete this class?")) {
+      deleteClass(id);
+    } else {
+      toast("Delete cancelled");
+    }
   };
 
   const getClassesForDay = (day) => {
     return classes
       .filter((c) => c.day === day)
+      .filter((c) => {
+        if (!debouncedSearch) return true;
+        return (
+          c.subject.toLowerCase().includes(debouncedSearch) ||
+          c.instructor.toLowerCase().includes(debouncedSearch) ||
+          (c.location && c.location.toLowerCase().includes(debouncedSearch))
+        );
+      })
       .sort((a, b) => a.time_start.localeCompare(b.time_start));
   };
 
@@ -119,8 +131,9 @@ const Schedule = () => {
 
   return (
     <div className="py-6 space-y-8 animate-in slide-in-from-top duration-300">
-      <div className="flex justify-between items-center lg:flex-row flex-col gap-2 text-center">
-        <div>
+      {/* Header with Search + Add Button */}
+      <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+        <div className="text-center lg:text-left">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
             Class Schedule
           </h1>
@@ -128,6 +141,20 @@ const Schedule = () => {
             Manage your weekly class schedule
           </p>
         </div>
+
+        {/* Search bar */}
+        <div className="flex items-center gap-2 w-full lg:w-1/3">
+          <Search className="h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search by subject, instructor, or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          />
+        </div>
+
+        {/* Add class button */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
@@ -135,7 +162,7 @@ const Schedule = () => {
               Add Class
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
+          <DialogContent className="sm:max-w-[425px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-md">
             <DialogHeader>
               <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
                 {editingClass ? "Edit Class" : "Add New Class"}
@@ -162,7 +189,7 @@ const Schedule = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select day" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white dark:bg-gray-800">
                       {days.map((day) => (
                         <SelectItem key={day} value={day}>
                           {day}
@@ -175,21 +202,21 @@ const Schedule = () => {
                   <Label htmlFor="color">Color</Label>
                   <Select
                     name="color"
-                    defaultValue={editingClass?.color || colors[0]}
+                    defaultValue={editingClass?.color || colors[0].value}
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select color" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white dark:bg-gray-800">
                       {colors.map((color) => (
-                        <SelectItem key={color} value={color}>
+                        <SelectItem key={color.value} value={color.value}>
                           <div className="flex items-center space-x-2">
                             <div
                               className="w-4 h-4 rounded"
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: color.value }}
                             />
-                            <span>{color}</span>
+                            <span>{color.name}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -249,6 +276,7 @@ const Schedule = () => {
         </Dialog>
       </div>
 
+      {/* Weekly Schedule Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-4">
         {days.map((day) => (
           <Card
@@ -266,7 +294,7 @@ const Schedule = () => {
             <CardContent className="space-y-3">
               {getClassesForDay(day).map((classItem) => (
                 <div
-                  key={classItem.id}
+                  key={classItem._id}
                   className="p-3 rounded-lg border border-gray-200 dark:border-gray-700"
                   style={{
                     borderLeftColor: classItem.color,
@@ -291,7 +319,7 @@ const Schedule = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(classItem.id)}
+                        onClick={() => handleDelete(classItem._id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
