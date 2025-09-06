@@ -1,13 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { debounce } from "lodash";
 import { useScheduleStore } from "../hooks/useSchedule";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Clock, User, MapPin, Edit, Trash2, Search } from "lucide-react";
+import {
+  Plus,
+  Clock,
+  User,
+  MapPin,
+  Edit,
+  Trash2,
+  Search,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const Schedule = () => {
@@ -35,18 +37,9 @@ const Schedule = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
+  const [selectedClass, setSelectedClass] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
 
   const colors = [
     { name: "Blue", value: "#60A5FA" },
@@ -57,6 +50,12 @@ const Schedule = () => {
     { name: "Pink", value: "#F472B6" },
     { name: "Cyan", value: "#22D3EE" },
   ];
+
+  // Dynamically get unique days from classes
+  const availableDays = useMemo(() => {
+    const days = [...new Set(classes.map((c) => c.day))].sort();
+    return days.length > 0 ? days : ["Monday"];
+  }, [classes]);
 
   useEffect(() => {
     fetchClasses();
@@ -91,20 +90,40 @@ const Schedule = () => {
 
     if (editingClass) {
       updateClass(editingClass._id, classData);
+      toast.success("Class updated successfully");
     } else {
       addClass(classData);
+      toast.success("Class added successfully");
     }
 
     setIsDialogOpen(false);
     setEditingClass(null);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this class?")) {
-      deleteClass(id);
-    } else {
-      toast("Delete cancelled");
-    }
+  const handleDelete = async (id) => {
+    console.log(`Initiating delete for class ID: ${id}`);
+    toast.info("Are you sure you want to delete this class?", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await deleteClass(id);
+            console.log(`Successfully deleted class ID: ${id}`);
+            setSelectedClass(null);
+          } catch (error) {
+            console.error(`Failed to delete class ID: ${id}`, error);
+            toast.error("Failed to delete class");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {
+          console.log(`Delete cancelled for class ID: ${id}`);
+          toast("Delete cancelled");
+        },
+      },
+    });
   };
 
   const getClassesForDay = (day) => {
@@ -124,233 +143,314 @@ const Schedule = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="py-6 space-y-8 animate-in slide-in-from-top duration-300">
-      {/* Header with Search + Add Button */}
-      <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-        <div className="text-center lg:text-left">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-in slide-in-from-top duration-500">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="text-center md:text-left">
+          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 tracking-tight">
             Class Schedule
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Manage your weekly class schedule
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+            Organize and manage your weekly classes with ease
           </p>
         </div>
 
-        {/* Search bar */}
-        <div className="flex items-center gap-2 w-full lg:w-1/3">
-          <Search className="h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search by subject, instructor, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-          />
-        </div>
-
-        {/* Add class button */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Class
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-md">
-            <DialogHeader>
-              <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
-                {editingClass ? "Edit Class" : "Add New Class"}
-              </DialogTitle>
-              <DialogDescription>
-                Fill in the details for your class
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  placeholder="e.g., Mathematics"
-                  defaultValue={editingClass?.subject}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="day">Day</Label>
-                  <Select name="day" defaultValue={editingClass?.day} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select day" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800">
-                      {days.map((day) => (
-                        <SelectItem key={day} value={day}>
-                          {day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
-                  <Select
-                    name="color"
-                    defaultValue={editingClass?.color || colors[0].value}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select color" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800">
-                      {colors.map((color) => (
-                        <SelectItem key={color.value} value={color.value}>
-                          <div className="flex items-center space-x-2">
-                            <div
-                              className="w-4 h-4 rounded"
-                              style={{ backgroundColor: color.value }}
-                            />
-                            <span>{color.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="time_start">Start Time</Label>
-                  <Input
-                    id="time_start"
-                    name="time_start"
-                    type="time"
-                    defaultValue={editingClass?.time_start}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="time_end">End Time</Label>
-                  <Input
-                    id="time_end"
-                    name="time_end"
-                    type="time"
-                    defaultValue={editingClass?.time_end}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="instructor">Instructor</Label>
-                <Input
-                  id="instructor"
-                  name="instructor"
-                  placeholder="e.g., Dr. Smith"
-                  defaultValue={editingClass?.instructor}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location (Optional)</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  placeholder="e.g., Room 101"
-                  defaultValue={editingClass?.location}
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
-              >
-                {editingClass ? "Update Class" : "Add Class"}
+        {/* Search and Add Class */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="relative flex items-center w-full sm:w-64">
+            <Search className="absolute left-3 h-5 w-5 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search classes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg px-4 py-2 transition-all duration-300">
+                <Plus className="h-5 w-5 mr-2" />
+                Add Class
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="w-full max-w-[90vw] sm:max-w-lg md:max-w-xl rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 sm:p-6 shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                  {editingClass ? "Edit Class" : "Add New Class"}
+                </DialogTitle>
+                <DialogDescription className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+                  Enter the details for your class below
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="subject" className="text-sm font-medium">
+                    Subject
+                  </Label>
+                  <Input
+                    id="subject"
+                    name="subject"
+                    placeholder="e.g., Mathematics"
+                    defaultValue={editingClass?.subject}
+                    required
+                    className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="day" className="text-sm font-medium">
+                      Day
+                    </Label>
+                    <Select
+                      name="day"
+                      defaultValue={editingClass?.day}
+                      required
+                    >
+                      <SelectTrigger className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                        <SelectValue placeholder="Select day" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        {availableDays.map((day) => (
+                          <SelectItem
+                            key={day}
+                            value={day}
+                            className="text-sm sm:text-base"
+                          >
+                            {day}
+                          </SelectItem>
+                        ))}
+                        <SelectItem
+                          value="New Day"
+                          className="text-sm sm:text-base"
+                        >
+                          New Day
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="color" className="text-sm font-medium">
+                      Color
+                    </Label>
+                    <Select
+                      name="color"
+                      defaultValue={editingClass?.color || colors[0].value}
+                      required
+                    >
+                      <SelectTrigger className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                        <SelectValue placeholder="Select color" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        {colors.map((color) => (
+                          <SelectItem
+                            key={color.value}
+                            value={color.value}
+                            className="text-sm sm:text-base"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <div
+                                className="w-4 h-4 rounded"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              <span>{color.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="time_start" className="text-sm font-medium">
+                      Start Time
+                    </Label>
+                    <Input
+                      id="time_start"
+                      name="time_start"
+                      type="time"
+                      defaultValue={editingClass?.time_start}
+                      required
+                      className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="time_end" className="text-sm font-medium">
+                      End Time
+                    </Label>
+                    <Input
+                      id="time_end"
+                      name="time_end"
+                      type="time"
+                      defaultValue={editingClass?.time_end}
+                      required
+                      className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instructor" className="text-sm font-medium">
+                    Instructor
+                  </Label>
+                  <Input
+                    id="instructor"
+                    name="instructor"
+                    placeholder="e.g., Dr. Smith"
+                    defaultValue={editingClass?.instructor}
+                    required
+                    className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="text-sm font-medium">
+                    Location (Optional)
+                  </Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    placeholder="e.g., Room 101"
+                    defaultValue={editingClass?.location}
+                    className="border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg py-2 transition-all duration-300"
+                >
+                  {editingClass ? "Update Class" : "Add Class"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Weekly Schedule Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-4">
-        {days.map((day) => (
-          <Card
-            key={day}
-            className="shadow-lg hover:shadow-xl transition-shadow duration-300"
-          >
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
-                {day}
-              </CardTitle>
-              <CardDescription>
-                {getClassesForDay(day).length} classes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {getClassesForDay(day).map((classItem) => (
-                <div
-                  key={classItem._id}
-                  className="p-3 rounded-lg border border-gray-200 dark:border-gray-700"
-                  style={{
-                    borderLeftColor: classItem.color,
-                    borderLeftWidth: "4px",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-sm">
-                      {classItem.subject}
-                    </h4>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingClass(classItem);
-                          setIsDialogOpen(true);
-                        }}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(classItem._id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+      {/* Main content with schedule and details panel */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Schedule List */}
+        <div className="flex-1 space-y-6">
+          {availableDays.map((day) => (
+            <div
+              key={day}
+              className="transition-shadow duration-300 rounded-xl bg-white dark:bg-gray-800"
+            >
+              <div className="p-4">
+                <div className="space-y-4">
+                  {getClassesForDay(day).map((classItem) => (
+                    <div
+                      key={classItem._id}
+                      onClick={() => setSelectedClass(classItem)}
+                      className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+                      style={{
+                        borderLeftColor: classItem.color,
+                        borderLeftWidth: "5px",
+                      }}
+                    >
+                      <h4 className="font-semibold text-base">
+                        {classItem.subject}
+                      </h4>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <Clock className="h-4 w-4" />
+                        {classItem.time_start} - {classItem.time_end}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <User className="h-4 w-4" />
+                        {classItem.instructor}
+                      </div>
+                      {classItem.location && (
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <MapPin className="h-4 w-4" />
+                          {classItem.location}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                    <Clock className="h-3 w-3" />
-                    <span>
-                      {classItem.time_start} - {classItem.time_end}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                    <User className="h-3 w-3" />
-                    <span>{classItem.instructor}</span>
-                  </div>
-                  {classItem.location && (
-                    <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                      <MapPin className="h-3 w-3" />
-                      <span>{classItem.location}</span>
-                    </div>
+                  ))}
+                  {getClassesForDay(day).length === 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                      No classes scheduled
+                    </p>
                   )}
                 </div>
-              ))}
-              {getClassesForDay(day).length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                  No classes scheduled
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Details Panel */}
+        {selectedClass && (
+          <div className="w-full lg:w-96 bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                {selectedClass.subject}
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingClass(selectedClass);
+                    setIsDialogOpen(true);
+                  }}
+                  className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                >
+                  <Edit className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleDelete(selectedClass._id)}
+                  className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                >
+                  <Trash2 className="h-5 w-5 text-red-500" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setSelectedClass(null)}
+                  className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                >
+                  <X className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <span>
+                  <strong>Instructor:</strong> {selectedClass.instructor}
+                </span>
+              </p>
+              <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                <span>
+                  <strong>Time:</strong> {selectedClass.time_start} -{" "}
+                  {selectedClass.time_end}
+                </span>
+              </p>
+              <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>
+                  <strong>Day:</strong> {selectedClass.day}
+                </span>
+              </p>
+              {selectedClass.location && (
+                <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  <span>
+                    <strong>Location:</strong> {selectedClass.location}
+                  </span>
                 </p>
               )}
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

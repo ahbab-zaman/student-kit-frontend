@@ -51,7 +51,13 @@ export const useScheduleStore = create((set, get) => ({
       toast.success("Class deleted successfully!");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete class");
+      if (err.response?.status === 400) {
+        toast.error("Invalid schedule ID format");
+      } else if (err.response?.status === 404) {
+        toast.error("Schedule not found");
+      } else {
+        toast.error("Failed to delete class");
+      }
     }
   },
 }));
