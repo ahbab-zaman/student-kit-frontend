@@ -28,7 +28,8 @@ import {
   Trash2,
   Edit2,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 const categories = {
   income: ["Allowance", "Job", "Scholarship", "Gift", "Other"],
@@ -67,7 +68,6 @@ const Budget = () => {
       toast({
         variant: "destructive",
         title: "Invalid Amount",
-        description: "Please enter a positive amount",
       });
       return;
     }
@@ -83,17 +83,17 @@ const Budget = () => {
     try {
       if (editingEntry) {
         await updateEntry(editingEntry._id, entryData);
-        toast({ title: "Entry Updated", className: "bg-blue-500 text-white" });
+        toast.success("Budget entry added successfully");
       } else {
         await addEntry(entryData);
-        toast({ title: "Entry Added", className: "bg-blue-500 text-white" });
+        toast.success("Budget entry updated successfully");
       }
       setIsDialogOpen(false);
       setSelectedType("income");
       setEditingEntry(null);
       e.target.reset();
     } catch {
-      toast({ variant: "destructive", title: "Failed to save entry" });
+      toast.error("Failed to save entry");
     }
   };
 
@@ -106,9 +106,9 @@ const Budget = () => {
     if (!entryToDelete) return;
     try {
       await deleteEntry(entryToDelete._id);
-      toast({ title: "Entry Deleted", className: "bg-blue-500 text-white" });
+      toast.success("Entry Deleted");
     } catch {
-      toast({ variant: "destructive", title: "Failed to delete entry" });
+      toast.error("Failed to delete entry");
     } finally {
       setDeleteDialogOpen(false);
       setEntryToDelete(null);
@@ -141,38 +141,46 @@ const Budget = () => {
   if (loading)
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
       </div>
     );
 
   return (
-    <div className="py-6 space-y-6 animate-in slide-in-from-top duration-300">
+    <div className="py-6 space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex justify-between items-center lg:flex-row flex-col lg:text-left text-center gap-2">
         <div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 drop-shadow-sm">
             Budget
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Track your income and expenses
+            Track your income and expenses with ease
           </p>
         </div>
 
         {/* Add/Edit Entry Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-105 transition-transform shadow-md">
               <Plus className="h-4 w-4 mr-2" />
               {editingEntry ? "Edit Entry" : "Add Entry"}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md bg-white/80 dark:bg-gray-800/80">
+          <DialogContent
+            className="w-full sm:max-w-md md:max-w-lg lg:max-w-2xl  
+              max-h-[90vh] overflow-y-auto
+              bg-white dark:bg-gray-900 
+              text-gray-900 dark:text-gray-100 
+              p-6 rounded-2xl shadow-2xl backdrop-blur-md
+              animate-in slide-in-from-top duration-500"
+          >
             <DialogHeader>
-              <DialogTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+              <DialogTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
                 {editingEntry ? "Edit Entry" : "New Entry"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Type */}
               <div className="space-y-2">
                 <Label htmlFor="type">Type</Label>
                 <Select
@@ -180,18 +188,28 @@ const Budget = () => {
                   defaultValue={editingEntry ? editingEntry.type : "income"}
                   onValueChange={setSelectedType}
                   required
-                  className="bg-white dark:bg-gray-700"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Income</SelectItem>
-                    <SelectItem value="expense">Expense</SelectItem>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 shadow-lg">
+                    <SelectItem
+                      value="income"
+                      className="hover:bg-blue-100 dark:hover:bg-blue-600 dark:hover:text-white"
+                    >
+                      Income
+                    </SelectItem>
+                    <SelectItem
+                      value="expense"
+                      className="hover:bg-blue-100 dark:hover:bg-blue-600 dark:hover:text-white"
+                    >
+                      Expense
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Amount */}
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
@@ -206,20 +224,24 @@ const Budget = () => {
                 />
               </div>
 
+              {/* Category */}
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
                   name="category"
                   defaultValue={editingEntry ? editingEntry.category : ""}
                   required
-                  className="bg-white dark:bg-gray-700"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 shadow-lg">
                     {categories[selectedType].map((cat) => (
-                      <SelectItem key={cat} value={cat}>
+                      <SelectItem
+                        key={cat}
+                        value={cat}
+                        className="hover:bg-blue-100 dark:hover:bg-blue-600 dark:hover:text-white"
+                      >
                         {cat}
                       </SelectItem>
                     ))}
@@ -227,6 +249,7 @@ const Budget = () => {
                 </Select>
               </div>
 
+              {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Input
@@ -238,6 +261,7 @@ const Budget = () => {
                 />
               </div>
 
+              {/* Date */}
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <Input
@@ -255,7 +279,7 @@ const Budget = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-105 transition-transform"
               >
                 {editingEntry ? "Update" : "Add"}
               </Button>
@@ -266,51 +290,47 @@ const Budget = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-6 flex justify-between items-center">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Income</p>
-              <p className="text-2xl font-bold text-green-500">
-                ${totalIncome.toFixed(2)}
-              </p>
-            </div>
-            <TrendingUp className="h-6 w-6 text-green-500" />
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-6 flex justify-between items-center">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Expenses
-              </p>
-              <p className="text-2xl font-bold text-red-500">
-                ${totalExpenses.toFixed(2)}
-              </p>
-            </div>
-            <TrendingDown className="h-6 w-6 text-red-500" />
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-6 flex justify-between items-center">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Savings
-              </p>
-              <p
-                className={`text-2xl font-bold ${
-                  savings >= 0 ? "text-blue-500" : "text-red-500"
-                }`}
-              >
-                ${savings.toFixed(2)}
-              </p>
-            </div>
-            <DollarSign className="h-6 w-6 text-blue-500" />
-          </CardContent>
-        </Card>
+        {[
+          {
+            title: "Income",
+            value: totalIncome,
+            color: "text-green-500",
+            icon: TrendingUp,
+          },
+          {
+            title: "Expenses",
+            value: totalExpenses,
+            color: "text-red-500",
+            icon: TrendingDown,
+          },
+          {
+            title: "Savings",
+            value: savings,
+            color: savings >= 0 ? "text-blue-500" : "text-red-500",
+            icon: DollarSign,
+          },
+        ].map((item, idx) => (
+          <Card
+            key={idx}
+            className="shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 rounded-xl"
+          >
+            <CardContent className="p-6 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {item.title}
+                </p>
+                <p className={`text-2xl font-bold ${item.color}`}>
+                  ${item.value.toFixed(2)}
+                </p>
+              </div>
+              <item.icon className={`h-6 w-6 ${item.color}`} />
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Expense Pie Chart */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-700 rounded-xl">
         <CardHeader>
           <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
             Expense Breakdown
@@ -318,19 +338,22 @@ const Budget = () => {
         </CardHeader>
         <CardContent>
           {expensesByCategory.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={expensesByCategory}
                   dataKey="value"
+                  nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={90}
+                  label
                 >
                   {expensesByCategory.map((entry, index) => (
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -342,7 +365,7 @@ const Budget = () => {
       </Card>
 
       {/* Recent Entries */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-6">
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-700 rounded-xl">
         <CardHeader>
           <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
             Recent Entries
@@ -350,10 +373,12 @@ const Budget = () => {
         </CardHeader>
         <CardContent>
           {entries.length > 0 ? (
-            entries.slice(0, 5).map((entry) => (
+            entries.slice(0, 5).map((entry, idx) => (
               <div
                 key={entry._id}
-                className="flex items-center justify-between p-3 border-b last:border-0"
+                className={`flex items-center justify-between p-3 border-b last:border-0 transition-colors ${
+                  idx % 2 === 0 ? "bg-gray-50 dark:bg-gray-800/50" : ""
+                } hover:bg-gray-100 dark:hover:bg-gray-700/70`}
               >
                 <div className="flex items-center space-x-3">
                   {entry.type === "income" ? (
@@ -371,7 +396,7 @@ const Budget = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-semibold ${
                       entry.type === "income"
                         ? "text-green-500"
                         : "text-red-500"
@@ -407,9 +432,20 @@ const Budget = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-sm bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
+        <DialogContent
+          className="w-full sm:max-w-md 
+            bg-white dark:bg-gray-900 
+            text-gray-900 dark:text-gray-100 
+            p-6 rounded-2xl shadow-2xl backdrop-blur-md
+            animate-in slide-in-from-top duration-500"
+        >
           <DialogHeader>
-            <DialogTitle className="text-red-500">Confirm Delete</DialogTitle>
+            <DialogTitle className="text-red-500 font-bold">
+              Confirm Delete
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new budget entry.
+            </DialogDescription>
           </DialogHeader>
           <p className="py-4 text-gray-700 dark:text-gray-300">
             Are you sure you want to delete this entry? This action cannot be

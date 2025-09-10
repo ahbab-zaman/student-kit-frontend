@@ -40,6 +40,8 @@ const Schedule = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [classToDelete, setClassToDelete] = useState(null);
 
   const colors = [
     { name: "Blue", value: "#60A5FA" },
@@ -54,7 +56,17 @@ const Schedule = () => {
   // Dynamically get unique days from classes
   const availableDays = useMemo(() => {
     const days = [...new Set(classes.map((c) => c.day))].sort();
-    return days.length > 0 ? days : ["Monday"];
+    return days.length > 0
+      ? days
+      : [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
   }, [classes]);
 
   useEffect(() => {
@@ -100,30 +112,23 @@ const Schedule = () => {
     setEditingClass(null);
   };
 
-  const handleDelete = async (id) => {
-    console.log(`Initiating delete for class ID: ${id}`);
-    toast.info("Are you sure you want to delete this class?", {
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          try {
-            await deleteClass(id);
-            console.log(`Successfully deleted class ID: ${id}`);
-            setSelectedClass(null);
-          } catch (error) {
-            console.error(`Failed to delete class ID: ${id}`, error);
-            toast.error("Failed to delete class");
-          }
-        },
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => {
-          console.log(`Delete cancelled for class ID: ${id}`);
-          toast("Delete cancelled");
-        },
-      },
-    });
+  const handleDelete = (id) => {
+    setClassToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteClass(classToDelete);
+      setSelectedClass(null);
+      toast.success("Class deleted successfully");
+    } catch (error) {
+      console.error(`Failed to delete class ID: ${classToDelete}`, error);
+      toast.error(`Failed to delete class: ${error.message}`);
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setClassToDelete(null);
+    }
   };
 
   const getClassesForDay = (day) => {
@@ -180,7 +185,18 @@ const Schedule = () => {
                 Add Class
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-full max-w-[90vw] sm:max-w-lg md:max-w-xl rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 sm:p-6 shadow-2xl">
+            <DialogContent
+              className="w-full 
+    sm:max-w-md 
+    md:max-w-lg 
+    lg:max-w-2xl  
+    max-h-[90vh] 
+    overflow-y-auto
+    bg-white dark:bg-gray-800 
+    text-gray-900 dark:text-gray-100 
+    p-4 sm:p-6 
+    shadow-2xl"
+            >
               <DialogHeader>
                 <DialogTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                   {editingClass ? "Edit Class" : "Add New Class"}
@@ -217,7 +233,15 @@ const Schedule = () => {
                         <SelectValue placeholder="Select day" />
                       </SelectTrigger>
                       <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                        {availableDays.map((day) => (
+                        {[
+                          "Sunday",
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                        ].map((day) => (
                           <SelectItem
                             key={day}
                             value={day}
@@ -226,12 +250,6 @@ const Schedule = () => {
                             {day}
                           </SelectItem>
                         ))}
-                        <SelectItem
-                          value="New Day"
-                          className="text-sm sm:text-base"
-                        >
-                          New Day
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -335,52 +353,54 @@ const Schedule = () => {
       {/* Main content with schedule and details panel */}
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Schedule List */}
+        {/* Schedule List */}
         <div className="flex-1 space-y-6">
-          {availableDays.map((day) => (
-            <div
-              key={day}
-              className="transition-shadow duration-300 rounded-xl bg-white dark:bg-gray-800"
-            >
-              <div className="p-4">
-                <div className="space-y-4">
-                  {getClassesForDay(day).map((classItem) => (
-                    <div
-                      key={classItem._id}
-                      onClick={() => setSelectedClass(classItem)}
-                      className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-                      style={{
-                        borderLeftColor: classItem.color,
-                        borderLeftWidth: "5px",
-                      }}
-                    >
-                      <h4 className="font-semibold text-base">
-                        {classItem.subject}
-                      </h4>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <Clock className="h-4 w-4" />
-                        {classItem.time_start} - {classItem.time_end}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <User className="h-4 w-4" />
-                        {classItem.instructor}
-                      </div>
-                      {classItem.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                          <MapPin className="h-4 w-4" />
-                          {classItem.location}
+          {classes.length === 0 ? (
+            <p className="text-center text-gray-500 dark:text-gray-400 py-6">
+              No classes scheduled
+            </p>
+          ) : (
+            availableDays.map((day) => (
+              <div
+                key={day}
+                className="transition-shadow duration-300 rounded-xl bg-white dark:bg-gray-800"
+              >
+                <div className="p-4">
+                  <div className="space-y-4">
+                    {getClassesForDay(day).map((classItem) => (
+                      <div
+                        key={classItem._id}
+                        onClick={() => setSelectedClass(classItem)}
+                        className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+                        style={{
+                          borderLeftColor: classItem.color,
+                          borderLeftWidth: "5px",
+                        }}
+                      >
+                        <h4 className="font-semibold text-base">
+                          {classItem.subject}
+                        </h4>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <Clock className="h-4 w-4" />
+                          {classItem.time_start} - {classItem.time_end}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                  {getClassesForDay(day).length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                      No classes scheduled
-                    </p>
-                  )}
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <User className="h-4 w-4" />
+                          {classItem.instructor}
+                        </div>
+                        {classItem.location && (
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <MapPin className="h-4 w-4" />
+                            {classItem.location}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Details Panel */}
@@ -405,7 +425,9 @@ const Schedule = () => {
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => handleDelete(selectedClass._id)}
+                  onClick={() => {
+                    handleDelete(selectedClass._id);
+                  }}
                   className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                 >
                   <Trash2 className="h-5 w-5 text-red-500" />
@@ -452,6 +474,41 @@ const Schedule = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-6 shadow-2xl animate-in slide-in-from-top duration-500">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete this class? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setClassToDelete(null);
+                toast.info("Delete cancelled");
+              }}
+              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

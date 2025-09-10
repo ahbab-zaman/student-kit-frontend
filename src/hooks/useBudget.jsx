@@ -27,6 +27,18 @@ const useBudget = create((set, get) => ({
     }
   },
 
+  updateEntry: async (id, updatedEntry) => {
+    try {
+      const { data } = await api.put(`/budget/${id}`, updatedEntry);
+      set((state) => ({
+        entries: state.entries.map((e) => (e._id === id ? data : e)),
+      }));
+    } catch (error) {
+      console.error("Failed to update entry:", error);
+      throw error;
+    }
+  },
+
   deleteEntry: async (id) => {
     try {
       await api.delete(`/budget/${id}`);
